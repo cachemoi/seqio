@@ -8,7 +8,7 @@ func main() {
 
 	// TODO writer to bin format (parquet?)
 
-	reader := fasta.NewReader()
+	reader := fasta.NewIO()
 
 	_, err := reader.ReadFile("fasta/testdata/example.fasta")
 	if err != nil {
