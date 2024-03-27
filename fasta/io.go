@@ -94,7 +94,7 @@ func (r *IO) Read(reader io.Reader) ([]*Data, error) {
 	}
 
 	// Append last record
-	if id != "" {
+	if id != "" && sequence != "" {
 		seqs = append(seqs, NewData(id, sequence))
 	}
 
