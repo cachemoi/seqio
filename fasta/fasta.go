@@ -5,8 +5,6 @@ import (
 	"io"
 	"os"
 	"strings"
-
-	"github.com/cachemoi/seqio/dna"
 )
 
 // Reader returns a structure able to parse DNA stored in FASTA format
@@ -17,7 +15,7 @@ func NewReader() *Reader {
 	return &Reader{}
 }
 
-func (r *Reader) ReadFile(path string) ([]*dna.Data, error) {
+func (r *Reader) ReadFile(path string) ([]*Data, error) {
 
 	file, err := os.Open(path)
 	if err != nil {
@@ -28,12 +26,12 @@ func (r *Reader) ReadFile(path string) ([]*dna.Data, error) {
 	return r.Read(file)
 }
 
-func (r *Reader) Read(reader io.Reader) ([]*dna.Data, error) {
+func (r *Reader) Read(reader io.Reader) ([]*Data, error) {
 
-	dnas := []*dna.Data{}
+	seqs := []*Data{}
 
-	var id dna.ID
-	var sequence dna.Sequence
+	var id ID
+	var sequence Sequence
 	var err error
 
 	scanner := bufio.NewScanner(reader)
@@ -45,12 +43,12 @@ func (r *Reader) Read(reader io.Reader) ([]*dna.Data, error) {
 
 			if id != "" {
 				// we should be done with the previous record
-				dnas = append(dnas, dna.NewData(id, sequence))
+				seqs = append(seqs, NewData(id, sequence))
 			}
 
-			id, err = dna.IDFromString(strings.TrimSpace(line[1:]))
+			id, err = IDFromString(strings.TrimSpace(line[1:]))
 			if err != nil {
-				return nil, err
+				return seqs, err
 			}
 
 			continue
@@ -58,9 +56,9 @@ func (r *Reader) Read(reader io.Reader) ([]*dna.Data, error) {
 
 		// Otherwise append sequence line
 
-		parsed, err := dna.SeqFromString(line)
+		parsed, err := SeqFromString(line)
 		if err != nil {
-			return nil, err
+			return seqs, err
 		}
 
 		sequence += parsed
@@ -68,12 +66,12 @@ func (r *Reader) Read(reader io.Reader) ([]*dna.Data, error) {
 
 	// Append last record
 	if id != "" {
-		dnas = append(dnas, dna.NewData(id, sequence))
+		seqs = append(seqs, NewData(id, sequence))
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, err
+		return seqs, err
 	}
 
-	return dnas, nil
+	return seqs, nil
 }

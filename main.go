@@ -6,6 +6,8 @@ import (
 
 func main() {
 
+	// TODO writer to bin format (parquet?)
+
 	reader := fasta.NewReader()
 
 	_, err := reader.ReadFile("fasta/testdata/example.fasta")
