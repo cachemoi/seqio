@@ -271,3 +271,83 @@ TACGGATACAGGTACCGAGCTCGATCGATCG
 		})
 	}
 }
+
+func TestMirror(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+
+		sequences []*Data
+
+		wantSeqs []*Data
+		wantErr  error
+	}{
+		{
+			name: "ok",
+
+			sequences: []*Data{
+				{
+					ID:       "Sequence1",
+					Sequence: "ATCGATCGATCGATCGATCGATCGATCGATCG"},
+				{
+					ID:       "Sequence2",
+					Sequence: "CGATCGATCGATCGATCGATCGATCGATCGAT",
+				},
+				{
+					ID:       "Sequence3",
+					Sequence: "TACGGATACAGGTACCGAGCTCGATCGATCG",
+				},
+			},
+
+			wantSeqs: []*Data{
+				{
+					ID:       "Sequence1",
+					Sequence: "ATCGATCGATCGATCGATCGATCGATCGATCG"},
+				{
+					ID:       "Sequence2",
+					Sequence: "CGATCGATCGATCGATCGATCGATCGATCGAT",
+				},
+				{
+					ID:       "Sequence3",
+					Sequence: "TACGGATACAGGTACCGAGCTCGATCGATCG",
+				},
+			},
+
+			wantErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		var tt = tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			// Create a temporary directory for testing
+			tempDir, err := os.MkdirTemp("", "test")
+			if err != nil {
+				t.Fatalf("Error creating temporary directory: %v", err)
+			}
+			defer os.RemoveAll(tempDir) // Clean up the temporary directory
+
+			testPath := filepath.Join(tempDir, "output.fasta")
+
+			io := NewIO()
+
+			err = io.WriteFile(testPath, tt.sequences)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("got %v, want %v", err, tt.wantErr)
+			}
+
+			gotSeqs, err := io.ReadFile(testPath)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("got %v, want %v", err, tt.wantErr)
+			}
+
+			if !cmp.Equal(gotSeqs, tt.wantSeqs) {
+				t.Errorf("gotSeqs and tt.wantSeqs didn't match %s", cmp.Diff(gotSeqs, tt.wantSeqs))
+			}
+
+		})
+	}
+}
